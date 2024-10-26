@@ -3,14 +3,16 @@ const slugify = require('slugify');
 
 const createTask=async(req,res)=>{
     try{
-        const user=req.user;
-        if (!user) return res.status(400).json({ msg: "No user found" });
+        console.log(req.body);
+        const userId = req.user._id;
+        console.log('hello');
+
         const { type, title, priority, assignedTo, checklist, dueDate } = req.body;
         if (!type || !title || !priority || !checklist) {
             return res.status(400).json({ msg: "Enter all fields" });
         }
         const task=await Task({
-            userId:user._id,
+            userId:userId,
             type,
             title,
             dueDate,
@@ -19,7 +21,7 @@ const createTask=async(req,res)=>{
             assignedTo
         });
         await task.save();
-        return res.status(400).json({ msg: "No user found" });
+        return res.status(200).json({ msg: "Task Created Successfully!" });
     }
     catch(e)
     {

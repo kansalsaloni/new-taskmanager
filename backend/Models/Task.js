@@ -25,7 +25,7 @@ const taskSchema = new mongoose.Schema(
     },
     checklist:[{
         checked:Boolean,
-        task:String
+        value:String
     },],
     dueDate:{
         type:String
