@@ -2,7 +2,7 @@ const User=require('../Models/User');
 const zod = require("zod");
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
-
+const validator = require('validator'); 
 const newUser = async (req, res) => {
 
     const signupBody = zod.object({
@@ -102,7 +102,6 @@ const Login = async (req, res) => {
 
 const updateUser = async (req, res) => {
     try {
-        console.log(req);
         const user = req.user;
         if (!user)             return res.status(400).json({ msg: "No user found" });
 
@@ -144,5 +143,66 @@ const updateUser = async (req, res) => {
       }
 };
 
-module.exports = { newUser, Login, updateUser}
+const addPeople = async (req, res) => {
+    try {
+        const user = req.user;
+        if (!user)            
+            return res.status(400).json({ msg: "No user found" });    
+        const updateUser = await User.findById(user._id);
+        const { assigneEmail } = req.body;
+        if (!assigneEmail || !validator.isEmail(assigneEmail)) {
+            return res.status(400).json({ msg: "Invalid or missing email address" });
+        }
+        if(assigneEmail === updateUser.email)
+        {
+            return res.status(400).json({ msg: "Yours and add new people email cannot be same." });
+        }
+         if(updateUser.myAssignies.includes(assigneEmail))
+        {
+            return res.status(400).json({ msg: "Email already added to assignee." });
+        }
+        if (assigneEmail) {
+            updateUser.myAssignies.push(assigneEmail); 
+            await updateUser.save();
+        }
+        res.status(200).json({ message: "Add people successfully!" });
+      } catch (e) {
+        return new Error(e.message);
+      }
+};
+
+const getAllMyAssignees = async (req, res) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            return res.status(400).json({ msg: "No user found" });
+        }
+
+        const updateUser = await User.findById(user._id);
+        const assignees = updateUser.myAssignies.map(email => {
+            let name = '';
+
+            const username = email.split('@')[0];
+            
+            if (username.includes('.')) {
+                const [firstName, lastName] = username.split('.');
+                name = `${firstName[0].toUpperCase()}${lastName[0].toUpperCase()}`;
+            } else {
+                name = `${username[0].toUpperCase()}${username[1]?.toUpperCase() || ''}`;
+            }
+
+            return {
+                email,
+                name
+            };
+        });
+
+        res.status(200).json({ message: "Get people successfully!" ,assignees });
+    } catch (e) {
+        res.status(500).json({ msg: 'No assignee fid' });
+    }
+};
+
+
+module.exports = { newUser, Login, updateUser,addPeople,getAllMyAssignees}
 

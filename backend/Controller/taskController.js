@@ -3,9 +3,7 @@ const slugify = require('slugify');
 
 const createTask=async(req,res)=>{
     try{
-        console.log(req.body);
         const userId = req.user._id;
-        console.log('hello');
 
         const { type, title, priority, assignedTo, checklist, dueDate } = req.body;
         if (!type || !title || !priority || !checklist) {
@@ -85,7 +83,6 @@ const editTask=async(req,res)=>{
 const deleteTask=async(req,res)=>{
         try{
             const {taskId}=req.params.id;
-            console.log(taskId);
             const task=  await Task.findById(taskId);
             if(!task) return res.status(400).json({  success: false,msg: "Task not found" });
 
